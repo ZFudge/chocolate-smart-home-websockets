@@ -21,9 +21,6 @@ dev:
             --log-level debug \
             --log-config logs.ini"
 
-#@docker compose -f docker-compose-dev.yml up
-
 .PHONY: shell
 shell:
-	@docker compose -f docker-compose-dev.yml exec csm-ws-service-dev sh
-
+	@docker exec -it csm-ws-service-dev sh
