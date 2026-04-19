@@ -29,3 +29,7 @@ ruff-fix:
 .PHONY: coverage
 coverage:
 	@docker compose -f docker-compose-dev.yml exec csm-ws-service-dev sh -c "pytest --cov=src --cov-report=term-missing tests/"
+
+.PHONY: test
+test:
+	@docker compose -f docker-compose-dev.yml exec csm-ws-service-dev sh -c "pytest tests/"
