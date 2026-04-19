@@ -4,23 +4,24 @@ build:
 
 .PHONY: dev
 dev:
-	@docker run \
-        --name csm-ws-service-dev \
-        -p 8050:8050 \
-		--rm \
-        --volume .:/ws-service/ \
-        --volume /tmp/logs/:/var/logs/ \
-        --workdir /ws-service/ \
-		csm-ws-service \
-        sh -c \
-            "uvicorn src.ws-app:app \
-            --reload \
-            --reload-dir src \
-            --host 0.0.0.0 \
-            --port 8050 \
-            --log-level debug \
-            --log-config logs.ini"
+	@docker compose -f docker-compose-dev.yml up --remove-orphans
 
 .PHONY: shell
 shell:
-	@docker exec -it csm-ws-service-dev sh
+	@docker compose -f docker-compose-dev.yml exec -it csm-ws-service-dev sh
+
+.PHONY: black
+black:
+	@docker compose -f docker-compose-dev.yml exec csm-ws-service-dev sh -c "black /ws-service/"
+
+.PHONY: ruff
+ruff:
+	@docker compose -f docker-compose-dev.yml exec csm-ws-service-dev sh -c "ruff check /ws-service/"
+
+.PHONY: ruff-fix
+ruff-fix:
+	@docker compose -f docker-compose-dev.yml exec csm-ws-service-dev sh -c "ruff check --fix /ws-service/"
+
+.PHONY: coverage
+coverage:
+	@docker compose -f docker-compose-dev.yml exec csm-ws-service-dev sh -c "pytest --cov=src --cov-report=term-missing tests/"

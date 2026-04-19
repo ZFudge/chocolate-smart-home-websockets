@@ -1,0 +1,55 @@
+networks:
+  csm-ws-network-dev:
+    name: csm-ws-network-dev
+
+volumes:
+  csm-redis-data-dev:
+    driver: local
+
+services:
+  csm-redis-dev:
+    image: redis:7.4.1-alpine
+    container_name: csm-redis-dev
+    networks:
+      - csm-ws-network-dev
+    ports:
+      - 6379:6379
+    volumes:
+      - csm-redis-data-dev:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+  csm-ws-service-dev:
+    build: .
+    image: csm-ws-service
+    container_name: csm-ws-service-dev
+    working_dir: /ws-service
+    networks:
+      - csm-ws-network-dev
+    volumes:
+      - type: bind
+        source: ./
+        target: /ws-service/
+      - type: bind
+        source: /tmp/logs/
+        target: /var/logs/
+    command: [
+      "uvicorn", "src.ws_app:app",
+      "--reload",
+      "--reload-dir", "src",
+      "--host", "0.0.0.0",
+      "--port", "8050",
+      "--log-level", "debug",
+      "--log-config", "logs.ini"
+    ]
+    depends_on:
+      csm-redis-dev:
+        condition: service_healthy
+    environment:
+      REDIS_HOST: csm-redis-dev
+      BACKEND_STREAM_NAME: csm-backend-stream-dev
+      FRONTEND_STREAM_NAME: csm-frontend-stream-dev
+      WEBSOCKETS_STREAM_NAME: csm-websockets-stream-dev
