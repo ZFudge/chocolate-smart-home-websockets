@@ -2,8 +2,12 @@
 build:
 	@docker build . -t csm-ws-service
 
+.PHONY: clean
+clean:
+	@docker compose -f docker-compose-dev.yml down
+
 .PHONY: dev
-dev:
+dev: clean
 	@docker compose -f docker-compose-dev.yml up --remove-orphans
 
 .PHONY: shell

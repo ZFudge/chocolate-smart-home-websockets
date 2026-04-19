@@ -50,4 +50,4 @@ async def send_data_to_backend_service(data: dict):
 
 @pytest.mark.asyncio
 async def request_devices_from_backend():
-    await send_data_to_backend_service({"action": "request_all_device_data"})
+    await send_data_to_backend_service({"action": "request_all_devices_data"})

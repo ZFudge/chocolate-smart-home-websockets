@@ -7,3 +7,4 @@ COPY requirements.txt /ws-service/
 RUN mkdir -p /var/logs/ws-service/
 
 RUN pip install -r requirements.txt
+RUN apk add curl

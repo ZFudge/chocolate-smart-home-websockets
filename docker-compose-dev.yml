@@ -53,3 +53,9 @@ services:
       BACKEND_STREAM_NAME: csm-backend-stream-dev
       FRONTEND_STREAM_NAME: csm-frontend-stream-dev
       WEBSOCKETS_STREAM_NAME: csm-websockets-stream-dev
+    healthcheck:
+      test: ["CMD-SHELL", "curl -v -s --max-time=1 ws://localhost:8050/ws 2>&1 | grep 'Operation timed out'"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s

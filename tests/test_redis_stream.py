@@ -19,7 +19,7 @@ async def test_request_devices_from_backend(redis_client):
     await streams.request_devices_from_backend()
     redis_client.xadd.assert_called_once_with(
         streams.names.BACKEND_STREAM_NAME,
-        json.loads('{"action": "request_all_device_data"}'),
+        json.loads('{"action": "request_all_devices_data"}'),
     )
 
 
