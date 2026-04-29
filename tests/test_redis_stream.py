@@ -7,7 +7,7 @@ from src import streams
 
 
 @pytest.mark.asyncio
-async def test_send_message_to_backend(redis_client):
+async def test_send_data_to_backend_service(redis_client):
     await streams.send_data_to_backend_service({"message": "test_message"})
     redis_client.xadd.assert_called_once_with(
         streams.names.BACKEND_STREAM_NAME, {"message": "test_message"}

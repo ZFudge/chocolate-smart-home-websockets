@@ -24,5 +24,11 @@ class ConnectionsManager(metaclass=SingletonMeta):
             )
 
     async def broadcast_to_clients(self, json_data: dict):
+        remove_connections = []
         for connection in self.active_connections:
-            await connection.send_json(data=json_data)
+            try:
+                await connection.send_json(data=json_data)
+            except RuntimeError:
+                remove_connections.append(connection)
+        for connection in remove_connections:
+            self.remove_connection(connection)

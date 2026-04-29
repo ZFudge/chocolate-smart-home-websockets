@@ -6,7 +6,10 @@ from fastapi import APIRouter, WebSocket
 from starlette.websockets import WebSocketDisconnect
 
 from src.ConnectionsManager import ConnectionsManager as CM
-from src.streams.send_recv import request_devices_from_backend
+from src.streams.send_recv import (
+    request_devices_from_backend,
+    send_data_to_backend_service,
+)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -24,7 +27,13 @@ async def client_websocket_endpoint(websocket: WebSocket):
         try:
             incoming_data_str = await websocket.receive_text()
             try:
-                await CM().send_message_to_backend(incoming_data_str=incoming_data_str)
+                data = json.loads(incoming_data_str)
+                if isinstance(data["value"], bool):
+                    # Redis demands bools be cast to a different type.
+                    # Converted back to bool on backend after read from redis stream.
+                    data["value"] = str(data["value"])
+                logger.info(f"Sending data to backend service: {data}")
+                await send_data_to_backend_service(data)
             except json.JSONDecodeError as e:
                 logger.error("Error in websocket_endpoint: invalid JSON: %s" % e)
                 # no need to break the loop if invalid JSON
