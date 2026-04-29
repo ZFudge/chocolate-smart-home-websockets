@@ -28,10 +28,15 @@ async def client_websocket_endpoint(websocket: WebSocket):
             incoming_data_str = await websocket.receive_text()
             try:
                 data = json.loads(incoming_data_str)
-                if isinstance(data["value"], bool):
-                    # Redis demands bools be cast to a different type.
-                    # Converted back to bool on backend after read from redis stream.
-                    data["value"] = str(data["value"])
+                if isinstance(data["mqtt_id"], list):
+                    # Redis demands lists be cast to a different type.
+                    # Converted back to list[int] on backend after read from redis stream.
+                    data["mqtt_id"] = str(data["mqtt_id"])
+                if isinstance(data["value"], (bool, list)):
+                    # Redis demands bools and lists be cast to a different type.
+                    # Converted back to bool/list on backend after read from redis stream.
+                    # To properly load list[str} single quotes should be replaced with double-quotes
+                    data["value"] = str(data["value"]).replace("'", '"')
                 logger.info(f"Sending data to backend service: {data}")
                 await send_data_to_backend_service(data)
             except json.JSONDecodeError as e:
