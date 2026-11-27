@@ -1,6 +1,6 @@
 networks:
-  csm-ws-network-dev:
-    name: csm-ws-network-dev
+  csm-websockets-network-dev:
+    name: csm-websockets-network-dev
 
 volumes:
   csm-redis-data-dev:
@@ -11,7 +11,7 @@ services:
     image: redis:7.4.1-alpine
     container_name: csm-redis-dev
     networks:
-      - csm-ws-network-dev
+      - csm-websockets-network-dev
     ports:
       - 6379:6379
     volumes:
@@ -22,20 +22,16 @@ services:
       timeout: 5s
       retries: 5
       start_period: 5s
-  csm-ws-service-dev:
+  csm-websockets-dev:
     build: .
-    image: csm-ws-service
-    container_name: csm-ws-service-dev
-    working_dir: /ws-service
+    image: csm-websockets
+    container_name: csm-websockets-dev
+    working_dir: /csm-websockets
     networks:
-      - csm-ws-network-dev
+      - csm-websockets-network-dev
     volumes:
-      - type: bind
-        source: ./
-        target: /ws-service/
-      - type: bind
-        source: /tmp/logs/
-        target: /var/logs/
+      - ./:/csm-websockets/
+      - /tmp/csm-logs/:/var/logs/
     command: [
       "uvicorn", "src.ws_app:app",
       "--reload",
@@ -49,9 +45,10 @@ services:
       csm-redis-dev:
         condition: service_healthy
     environment:
-      REDIS_HOST: csm-redis-dev
       BACKEND_STREAM_NAME: csm-backend-stream-dev
       FRONTEND_STREAM_NAME: csm-frontend-stream-dev
+      LOG_SUFFIX: -dev
+      REDIS_HOST: csm-redis-dev
       WEBSOCKETS_STREAM_NAME: csm-websockets-stream-dev
     healthcheck:
       test: ["CMD-SHELL", "curl -v -s --max-time=1 ws://localhost:8050/ws 2>&1 | grep 'Operation timed out'"]
